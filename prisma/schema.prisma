@@ -1,0 +1,132 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Seller {
+  id        String    @id @default(uuid())
+  name      String
+  password  String
+  email     String?
+  image     String?
+  pinCode   Int?
+  wallet    Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  adminId   String?
+  Debtor    Debtor[]
+  Example   Example[]
+}
+
+model Debtor {
+  id                   String                 @id @default(uuid())
+  name                 String
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  address              String
+  note                 String?
+  Seller               Seller                 @relation(fields: [sellerId], references: [id])
+  sellerId             String
+  PhoneNumbersOfDebtor PhoneNumbersOfDebtor[]
+  ImagesOfDebtor       ImagesOfDebtor[]
+  Debt                 Debt[]
+  Payment              Payment[]
+  Message              Message[]
+}
+
+model PhoneNumbersOfDebtor {
+  id        String   @id @default(uuid())
+  phone     String
+  Debtor    Debtor   @relation(fields: [debtorId], references: [id])
+  debtorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ImagesOfDebtor {
+  id        String   @id @default(uuid())
+  imgUrl    String
+  Debtor    Debtor   @relation(fields: [debtorId], references: [id])
+  debtorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Debt {
+  id            String         @id @default(uuid())
+  date          DateTime
+  time          String
+  period        String
+  amountOfMoney Int
+  note          String?
+  Debtor        Debtor         @relation(fields: [debtorId], references: [id])
+  isActive      Boolean
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  debtorId      String
+  ImagesOfDebt  ImagesOfDebt[]
+  Payment       Payment[]
+}
+
+model ImagesOfDebt {
+  id        String   @id @default(uuid())
+  imgUrl    String
+  Debt      Debt     @relation(fields: [debtId], references: [id])
+  debtId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  Debtor      Debtor   @relation(fields: [debtorId], references: [id])
+  debtorId    String
+  ransomPrice Int
+  Debt        Debt     @relation(fields: [debtId], references: [id])
+  debtId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Example {
+  id        String    @id @default(uuid())
+  text      String
+  isActive  Boolean   @default(false)
+  Seller    Seller    @relation(fields: [sellerId], references: [id])
+  sellerId  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Message   Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  text      String
+  isSended  Boolean
+  Example   Example  @relation(fields: [exampleId], references: [id])
+  exampleId String
+  Debtor    Debtor   @relation(fields: [debtorId], references: [id])
+  debtorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
